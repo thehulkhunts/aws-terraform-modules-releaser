@@ -11,10 +11,12 @@ resource "aws_instance" "ec2" {
     volume_size = each.value.volume_size
     volume_type = each.value.volume_type
   }
-  tags = {
+  tags = merge(
+    var.tags, 
+    {
     Name = "${var.environment}-${each.key}"
-    Environment = var.environment
   }
+)
 }
 
 data "aws_ssm_parameter" "ami" {
