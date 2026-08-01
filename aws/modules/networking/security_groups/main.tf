@@ -5,7 +5,7 @@ resource "aws_security_group" "main" {
     vpc_id = var.vpc_id
     
     tags = merge(
-        each.value.tags,
+        var.tags,
         {
             Name = each.key
         }
@@ -30,6 +30,7 @@ resource "aws_security_group_rule" "ingress" {
   to_port = each.value.rule.to_port
   protocol = each.value.rule.protocol
   cidr_blocks = each.value.rule.cidr_blocks
+  description = each.value.rule.description
 }
 
 //create egress security group
