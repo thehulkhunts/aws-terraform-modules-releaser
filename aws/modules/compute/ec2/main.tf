@@ -4,7 +4,7 @@ resource "aws_instance" "ec2" {
   ami = data.aws_ami.latest.id
   key_name = each.value.key_name
   subnet_id = each.value.subnet_id
-  vpc_security_group_ids = var.vpc_security_group
+  vpc_security_group_ids = each.value.security_group_ids
   associate_public_ip_address = each.value.associate_public_ip_address
 
   root_block_device {
