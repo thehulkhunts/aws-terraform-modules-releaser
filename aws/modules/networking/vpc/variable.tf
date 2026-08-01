@@ -18,3 +18,10 @@ variable "private_subnet_cidr" {
   type = list(string)
   description = "The CIDR blocks for the private subnets"
 }
+
+//reusable tags for resources
+variable "tags" {
+  type = map(string)
+  description = "A map of tags to assign to resources"
+  default = {}
+}
