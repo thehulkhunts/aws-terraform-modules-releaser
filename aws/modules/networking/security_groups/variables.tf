@@ -23,11 +23,18 @@ variable "security_groups" {
       cidr_blocks = list(string)
 
     }))
-      tags = map(string)
+      
   }))
 }
 
 variable "vpc_id" {
   type = string
   description = "vpc_id to interpolate"
+}
+
+//adding reusable tags for resources
+variable "tags" {
+  description = "Common tags for all security groups"
+  type        = map(string)
+  default     = {}
 }

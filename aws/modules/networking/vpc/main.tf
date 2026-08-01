@@ -5,10 +5,13 @@ resource "aws_vpc" "main" {
   enable_dns_hostnames = true
   instance_tenancy     = "default"
 
-  tags = {
+ //using reusable-tags
+ tags = merge(
+  var.tags,
+ {
     Name = "${var.environment}-vpc"
-    Environment = var.environment
-  }
+ }
+)
 }
 
 //create a public subnet in the vpc
@@ -19,21 +22,25 @@ resource "aws_subnet" "public" {
     availability_zone = var.availability_zone[count.index]
     map_public_ip_on_launch = true
 
-    tags = {
-      Name = "${var.environment}-public-subnet-${count.index + 1}"
-      Environment = var.environment
-      "kubernetes.io/role/elb" = "1"
-    }
+  tags = merge(
+    var.tags,
+  {
+    Name = "${var.environment}-public-subnet-${count.index + 1}"
+    "kubernetes.io/role/elb" = "1"
+  }
+)
 }
 
 //create an internet gateway for the vpc
 resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
 
-  tags = {
-    Name = "${var.environment}-igw"
-    Environment = var.environment
+  tags = merge(
+    var.tags,
+  {
+    Name = "${var.environment}-internet-gateway"
   }
+)
 }
 
 //create a route table for the public subnet
@@ -44,6 +51,12 @@ resource "aws_route_table" "public" {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.main.id
   }
+  tags = merge(
+    var.tags,
+  {
+    Name = "${var.environment}-public-route-table"
+  }
+)
 }
 
 //associate the route table with the public subnet
@@ -61,21 +74,25 @@ resource "aws_subnet" "private" {
     availability_zone = var.availability_zone[count.index]
     map_public_ip_on_launch = false
 
-    tags = {
-      Name = "${var.environment}-private-subnet-${count.index + 1}"
-      Environment = var.environment
-      "kubernetes.io/role/internal-elb" = "1"
-    }
+  tags = merge(
+    var.tags,
+  {
+    Name = "${var.environment}-private-subnet-${count.index + 1}"
+    "kubernetes.io/role/internal-elb" = "1"
+  }
+)
 }
 //create a elastic ip for the nat gateway
 resource "aws_eip" "nat" {
   count = length(var.availability_zone)
   domain = "vpc"
 
-  tags = {
+ tags = merge(
+  var.tags,
+  {
     Name = "${var.environment}-nat-eip-${count.index + 1}"
-    Environment = var.environment
   }
+)
 }
 //create a nat gateway for the private subnet  
 resource "aws_nat_gateway" "main" {
@@ -83,10 +100,12 @@ resource "aws_nat_gateway" "main" {
   allocation_id = aws_eip.nat[count.index].id
   subnet_id = aws_subnet.public[count.index].id
 
-  tags = {
+tags = merge(
+  var.tags,
+  {
     Name = "${var.environment}-nat-gateway-${count.index + 1}"
-    Environment = var.environment
   }
+)
 }
 //create a route table for the private subnet
 resource "aws_route_table" "private" {
@@ -100,10 +119,12 @@ resource "aws_route_table" "private" {
 
     depends_on = [aws_nat_gateway.main]
 
-    tags = {
-      Name = "${var.environment}-private-route-table-${count.index + 1}"
-      Environment = var.environment
-    }
+  tags = merge(
+    var.tags,
+    {
+    Name = "${var.environment}-private-route-table-${count.index + 1}"
+  }
+)
 }
 
 //create a route table association for the private subnet
