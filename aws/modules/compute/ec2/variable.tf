@@ -6,19 +6,11 @@ variable "ec2_instances" {
     volume_size = number
     volume_type = string
     associate_public_ip_address = bool
+    security_group_ids = list(string)
   }))
 }
 
 variable "environment" {
   type = string
   description = "environment for instances"
-}
-
-variable "vpc_id" {
-  type = string
-  description = "vpc_id"
-}
-
-variable "vpc_security_group" {
-  type = list(string)
 }
